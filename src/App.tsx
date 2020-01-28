@@ -1,12 +1,18 @@
 import React from 'react';
-import './App.css';
-import { List } from './content/list/List';
+import { Route, Switch, Router } from 'react-router-dom';
+import { createBrowserHistory } from 'history';
+import { ListContainer } from './content/list/ListContainer';
+
+export const history = createBrowserHistory();
 
 const App: React.FC = () => {
   return (
-    <div className='App'>
-      <List />
-    </div>
+    <Router history={history}>
+      <Switch>
+        <Route exact path='/gnomes' component={ListContainer} />
+        <Route exact path='/gnomes/:id' component={ListContainer} />
+      </Switch>
+    </Router>
   );
 };
 

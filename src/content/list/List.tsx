@@ -1,36 +1,37 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React from 'react';
 import { GnomeType } from '../../models/Gnome';
+import styled from 'styled-components';
+import { Item } from './item/Item';
 
-export const List: React.FC = () => {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isErrored, setIsErrored] = useState<boolean>(false);
-  const [gnomes, setGnomes] = useState<Array<GnomeType> | undefined | null>(
-    undefined
+const Root = styled.ul`
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: 10px;
+`;
+
+type ListProps = {
+  gnomes: Array<GnomeType> | undefined | null;
+  id?: number;
+};
+
+export const List: React.FC<ListProps> = ({ gnomes, id }) => {
+  return gnomes !== null && gnomes !== undefined ? (
+    <Root>
+      {gnomes.map((gnome, index) => {
+        return (
+          <Item
+            isExpanded={Number(id) === gnome.id}
+            key={gnome.id}
+            isLast={index === gnomes.length - 1}
+            item={gnome}
+          />
+        );
+      })}
+    </Root>
+  ) : (
+    <>TEST</>
   );
-
-  useEffect(() => {
-    setIsLoading(true);
-    setIsErrored(false);
-
-    axios
-      .get<Array<GnomeType>>(process.env.REACT_APP_GET_POPULATION_ENDPOINT)
-      .then(response => {
-        if (response.status !== 200) {
-          setGnomes(null);
-          setIsErrored(true);
-          setIsLoading(false);
-          return;
-        }
-
-        setGnomes(response.data);
-        setIsLoading(false);
-      })
-      .catch(() => {
-        setIsErrored(true);
-        setIsLoading(false);
-      });
-  }, [setIsLoading, setIsErrored, setGnomes]);
-
-  return <>{String(isLoading)}</>;
 };

@@ -1,3 +1,8 @@
+enum Genre {
+  Male,
+  Female
+}
+
 export type GnomeType = {
   id: number;
   name: string;
@@ -8,4 +13,6 @@ export type GnomeType = {
   hair_color: string;
   professions: Array<string>;
   friends: Array<GnomeType['name']>;
+  friends_linked: Array<GnomeType | undefined>;
+  genre: Genre;
 };
