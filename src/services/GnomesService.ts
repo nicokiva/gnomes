@@ -57,11 +57,52 @@ class GnomesService {
     }
   }
 
+  getSublist(
+    gnomes: Array<GnomeType>,
+    pivotId: number,
+    amount: number
+  ): Array<GnomeType> {
+    const index = gnomes.findIndex(gnome => gnome.id === pivotId);
+
+    const previous = index;
+    const following = gnomes.length - index;
+
+    const perSide = amount / 2;
+    if (previous >= perSide && following >= perSide) {
+      return [
+        ...gnomes.filter((_, i) => i > index - perSide - 1 && i < index),
+        gnomes[index],
+        ...gnomes.filter((_, i) => i < index + perSide + 1 && i > index)
+      ];
+    }
+
+    if (previous >= perSide) {
+      return [
+        ...gnomes.filter(
+          (_, i) =>
+            i > index - perSide - following - (perSide - following) + 1 &&
+            i < index
+        ),
+        gnomes[index],
+        ...gnomes.filter((_, i) => i < index + perSide + 1 && i > index)
+      ];
+    }
+
+    return [
+      ...gnomes.filter((_, i) => i > index - perSide - 1 && i < index),
+      gnomes[index],
+      ...gnomes.filter(
+        (_, i) => i < index + perSide + 1 + (perSide - previous) && i > index
+      )
+    ];
+  }
+
   async getGnomes(
-    pageNumber: number,
-    pageSize: number
+    pivotId: number | undefined = undefined,
+    amount: number = 20
   ): Promise<Array<GnomeType> | null> {
     let gnomes = this.getCachedGnomes();
+
     if (gnomes === undefined) {
       const response = await this.loadGnomes();
       if (response.success === false) {
@@ -71,7 +112,7 @@ class GnomesService {
       gnomes = response.data;
     }
 
-    return gnomes.slice(pageNumber * pageSize, (pageNumber + 1) * pageSize);
+    return this.getSublist(gnomes, pivotId || gnomes[0].id, amount);
   }
 }
 

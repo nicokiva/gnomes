@@ -10,7 +10,6 @@ export const ListContainer: React.FC = () => {
   const [gnomes, setGnomes] = useState<Array<GnomeType> | undefined | null>(
     undefined
   );
-  const [currentPage, setCurrentPage] = useState<number>(0);
 
   const { id } = useParams();
 
@@ -36,38 +35,27 @@ export const ListContainer: React.FC = () => {
 
     setIsLoading(true);
 
-    gnomesService.getGnomes(currentPage, 20).then(newGnomes => {
-      let found = false;
-      if (id === undefined) {
-        found = true;
-      } else {
-        found =
-          newGnomes !== null &&
-          newGnomes.find(gnome => gnome.id === Number(id)) !== undefined;
-      }
+    gnomesService
+      .getGnomes(id !== undefined ? Number(id) : undefined)
+      .then(newGnomes => {
+        if (newGnomes !== null) {
+          if (gnomes === null || gnomes === undefined) {
+            setGnomes(newGnomes);
+          }
 
-      if (newGnomes !== null) {
-        if (gnomes === null || gnomes === undefined) {
-          setGnomes(newGnomes);
+          if (
+            gnomes !== null &&
+            gnomes !== undefined &&
+            newGnomes.every(gnome => gnomes.includes(gnome) === false)
+          ) {
+            setGnomes(gnomes => [...gnomes!, ...newGnomes]);
+          }
         }
 
-        if (
-          gnomes !== null &&
-          gnomes !== undefined &&
-          newGnomes.every(gnome => gnomes.includes(gnome) === false)
-        ) {
-          setGnomes(gnomes => [...gnomes!, ...newGnomes]);
-        }
-      }
-
-      if (found === false) {
-        setCurrentPage(pageNumber => pageNumber + 1);
-      }
-
-      setIsLoading(false);
-      setIsErrored(newGnomes === undefined);
-    });
-  }, [currentPage, id]);
+        setIsLoading(false);
+        setIsErrored(newGnomes === undefined);
+      });
+  }, [id]);
 
   return (
     <List gnomes={gnomes} id={id !== undefined ? Number(id) : undefined} />

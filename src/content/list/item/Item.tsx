@@ -80,7 +80,7 @@ export const Item: React.FC<ItemProps> = props => {
     if (isExpanded === true) {
       ref.current?.scrollIntoView({
         behavior: 'smooth',
-        block: 'start'
+        block: 'center'
       });
     }
   };
