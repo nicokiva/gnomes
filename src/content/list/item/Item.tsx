@@ -73,6 +73,8 @@ const ExtraDataStyled = styled.div<{ isVisible: boolean }>`
   flex-direction: column;
 `;
 
+const FriendStyled = styled.span``;
+
 export const Item: React.FC<ItemProps> = props => {
   const ref = useRef<HTMLLIElement>(null);
 
@@ -121,28 +123,27 @@ export const Item: React.FC<ItemProps> = props => {
               answer={props.item.professions.join(', ')}
             />
 
-            {props.item.friends_linked !== undefined && (
-              <QuestionAnswer
-                question='Friends'
-                answer={props.item.friends_linked.map(friend =>
-                  friend !== undefined ? (
-                    <span key={friend.id}>
-                      <a
-                        href='#'
+            {props.item.friends_linked !== undefined &&
+              props.item.friends_linked.length > 0 && (
+                <QuestionAnswer
+                  question='Friends'
+                  answer={props.item.friends_linked.map(friend =>
+                    friend !== undefined ? (
+                      <FriendStyled
+                        key={friend.id}
                         onClick={() => {
                           showGnome(friend.id);
                         }}
                       >
                         {friend.name}
-                      </a>
-                      {', '}
-                    </span>
-                  ) : (
-                    undefined
-                  )
-                )}
-              />
-            )}
+                        {', '}
+                      </FriendStyled>
+                    ) : (
+                      undefined
+                    )
+                  )}
+                />
+              )}
           </ExtraDataStyled>
         </DataContainerStyled>
 

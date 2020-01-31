@@ -13,6 +13,13 @@ export const ListContainer: React.FC = () => {
 
   const { id } = useParams();
 
+  const fetchGnomes = (pivotId?: number) =>
+    gnomesService.getGnomes(pivotId).then(newGnomes => {
+      setGnomes(newGnomes);
+
+      return newGnomes;
+    });
+
   useEffect(() => {
     const gnomeAlreadyLoaded = (
       id: Number,
@@ -34,30 +41,23 @@ export const ListContainer: React.FC = () => {
     }
 
     setIsLoading(true);
-
-    gnomesService
-      .getGnomes(id !== undefined ? Number(id) : undefined)
-      .then(newGnomes => {
-        if (newGnomes !== null) {
-          if (gnomes === null || gnomes === undefined) {
-            setGnomes(newGnomes);
-          }
-
-          if (
-            gnomes !== null &&
-            gnomes !== undefined &&
-            newGnomes.every(gnome => gnomes.includes(gnome) === false)
-          ) {
-            setGnomes(gnomes => [...gnomes!, ...newGnomes]);
-          }
-        }
-
-        setIsLoading(false);
-        setIsErrored(newGnomes === undefined);
-      });
+    fetchGnomes(id !== undefined ? Number(id) : undefined).then(newGnomes => {
+      setIsLoading(false);
+      setIsErrored(newGnomes === undefined);
+    });
   }, [id]);
 
+  const handleFetchMore = (pivotId: number) => {
+    fetchGnomes(pivotId);
+  };
+
   return (
-    <List gnomes={gnomes} id={id !== undefined ? Number(id) : undefined} />
+    <List
+      gnomes={gnomes}
+      onFetchMore={handleFetchMore}
+      isLoading={isLoading}
+      isErrored={isErrored}
+      id={id !== undefined ? Number(id) : undefined}
+    />
   );
 };
