@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { GnomeType } from '../../models/Gnome';
+import { GnomeType, GnomeFiltersType } from '../../models/Gnome';
 import { useParams } from 'react-router-dom';
 import { gnomesService } from '../../services/GnomesService';
-import { List } from './List';
+import { List, ListProps } from './List';
+import { history } from '../../App';
 
-export const ListContainer: React.FC = () => {
+type ListContainerProps = {};
+
+export const ListContainer: React.FC<ListContainerProps> = props => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isErrored, setIsErrored] = useState<boolean>(false);
   const [gnomes, setGnomes] = useState<Array<GnomeType> | undefined | null>(
     undefined
   );
+  const [filters, setFilters] = useState<GnomeFiltersType | undefined>(
+    undefined
+  );
 
   const { id } = useParams();
 
-  const fetchGnomes = (pivotId?: number) =>
-    gnomesService.getGnomes(pivotId).then(newGnomes => {
+  const fetchGnomes = (pivotId?: GnomeType['id'], filters?: GnomeFiltersType) =>
+    gnomesService.getGnomes(pivotId, filters).then(newGnomes => {
       setGnomes(newGnomes);
 
       return newGnomes;
@@ -29,30 +35,35 @@ export const ListContainer: React.FC = () => {
       gnomes !== null &&
       gnomes.find(gnome => gnome.id === Number(id)) !== undefined;
 
-    const gnomesAlreadyLoaded = (
-      gnomes: Array<GnomeType> | undefined | null
-    ): boolean => gnomes !== undefined && gnomes !== null && gnomes.length > 0;
-
-    if (
-      (id !== undefined && gnomeAlreadyLoaded(Number(id), gnomes)) ||
-      (id === undefined && gnomesAlreadyLoaded(gnomes))
-    ) {
+    if (id !== undefined && gnomeAlreadyLoaded(Number(id), gnomes)) {
       return;
     }
 
     setIsLoading(true);
-    fetchGnomes(id !== undefined ? Number(id) : undefined).then(newGnomes => {
-      setIsLoading(false);
-      setIsErrored(newGnomes === undefined);
-    });
-  }, [id]);
+    fetchGnomes(id !== undefined ? Number(id) : undefined, filters).then(
+      newGnomes => {
+        setIsLoading(false);
+        setIsErrored(newGnomes === undefined);
+      }
+    );
+  }, [id, filters]);
 
-  const handleFetchMore = (pivotId: number) => {
-    fetchGnomes(pivotId);
+  const handleFetchMore = (pivotId: GnomeType['id']) => {
+    fetchGnomes(pivotId, filters);
+  };
+
+  const handleApplyFilters = (
+    filters: Parameters<ListProps['onApplyFilters']>[0]
+  ) => {
+    setFilters(filters);
+
+    history.push(`/gnomes`);
   };
 
   return (
     <List
+      filters={filters}
+      onApplyFilters={handleApplyFilters}
       gnomes={gnomes}
       onFetchMore={handleFetchMore}
       isLoading={isLoading}

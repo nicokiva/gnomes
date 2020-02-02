@@ -3,7 +3,10 @@ import { GnomeType } from '../../models/Gnome';
 import styled from 'styled-components';
 import { Item } from './item/Item';
 import { Loading } from './item/loading/Loading';
-import { Filter } from './filter/Filter';
+import {
+  FilterContainer,
+  FilterContainerProps
+} from './filter/FilterContainer';
 
 const Root = styled.div``;
 
@@ -17,12 +20,14 @@ const ListStyled = styled.ul`
   padding: 10px;
 `;
 
-type ListProps = {
+export type ListProps = {
   gnomes: Array<GnomeType> | undefined | null;
   id?: number;
   onFetchMore: (pivotId: number) => void;
   isLoading: boolean;
   isErrored: boolean;
+  filters: FilterContainerProps['defaultFilters'];
+  onApplyFilters: FilterContainerProps['onApplyFilter'];
 };
 
 export const List: React.FC<ListProps> = ({
@@ -30,7 +35,9 @@ export const List: React.FC<ListProps> = ({
   id,
   onFetchMore,
   isLoading,
-  isErrored
+  isErrored,
+  filters,
+  onApplyFilters
 }) => {
   const ref = useRef<HTMLUListElement>(null);
 
@@ -71,7 +78,10 @@ export const List: React.FC<ListProps> = ({
 
   return gnomes !== null && gnomes !== undefined ? (
     <Root>
-      <Filter />
+      <FilterContainer
+        defaultFilters={filters}
+        onApplyFilter={onApplyFilters}
+      />
       <ListStyled ref={ref}>
         {gnomes.map((gnome, index) => (
           <Item

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { GnomeType } from '../models/Gnome';
+import { GnomeType, GnomeFiltersType } from '../models/Gnome';
 import { sortBy } from 'lodash';
 
 type ResponseType<T> =
@@ -97,8 +97,20 @@ class GnomesService {
     ];
   }
 
+  applyFilters(gnome: GnomeType, filters: GnomeFiltersType) {
+    if (
+      filters.name !== undefined &&
+      gnome.name.includes(filters.name) === false
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
   async getGnomes(
     pivotId: number | undefined = undefined,
+    filters: GnomeFiltersType | undefined = undefined,
     amount: number = 20
   ): Promise<Array<GnomeType> | null> {
     let gnomes = this.getCachedGnomes();
@@ -112,7 +124,15 @@ class GnomesService {
       gnomes = response.data;
     }
 
-    return this.getSublist(gnomes, pivotId || gnomes[0].id, amount);
+    const filteredGnomes = gnomes.filter(
+      gnome =>
+        filters === undefined ||
+        (filters !== undefined && this.applyFilters(gnome, filters) === true)
+    );
+
+    return filteredGnomes.length > amount
+      ? this.getSublist(filteredGnomes, pivotId || gnomes[0].id, amount)
+      : filteredGnomes;
   }
 }
 

@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import ArrowDown from '../../../images/arrow-down.png';
+import Search from '../../../images/search.png';
 import { Input } from './input/Input';
+import { Button } from '@material-ui/core';
 
 const Root = styled.div`
   display: flex;
@@ -38,22 +40,62 @@ const ImageStyled = styled.img`
   width: 20px;
 `;
 
-export const Filter: React.FC = () => {
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+const FiltersInputStyled = styled.div`
+  flex-grow: 1;
+`;
 
-  const expandOrCollapse = () => {
-    setIsExpanded(!isExpanded);
-  };
+const SearchButtonStyled = styled(Button)`
+  && {
+    background-color: #e0e0e0;
+    border: solid 1px;
+  }
 
-  return (
-    <Root>
-      <FiltersStyled isExpanded={isExpanded}>
-        <h2>Filters</h2>
-        <Input />
-      </FiltersStyled>
-      <ButtonStyled onClick={expandOrCollapse}>
-        <ImageStyled src={ArrowDown} />
-      </ButtonStyled>
-    </Root>
-  );
+  width: 130px;
+`;
+
+const SearchToolbar = styled.div`
+  text-align: right;
+`;
+
+export type FilterProps = {
+  isExpanded: boolean;
+  onExpandOrCollapse: () => void;
+  onChangeName: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onApplyFilter: () => void;
+
+  name?: string;
 };
+
+export const Filter: React.FC<FilterProps> = ({
+  isExpanded,
+  onExpandOrCollapse,
+  onChangeName,
+  onApplyFilter,
+  name
+}) => (
+  <Root>
+    <FiltersStyled isExpanded={isExpanded}>
+      <h2>Filters</h2>
+
+      <FiltersInputStyled>
+        <Input
+          value={name !== undefined ? name : ''}
+          placeholder='Matthew'
+          label='Name (contains)'
+          onChange={onChangeName}
+        />
+      </FiltersInputStyled>
+      <SearchToolbar>
+        <SearchButtonStyled
+          endIcon={<ImageStyled src={Search} />}
+          onClick={onApplyFilter}
+        >
+          Search
+        </SearchButtonStyled>
+      </SearchToolbar>
+    </FiltersStyled>
+    <ButtonStyled onClick={onExpandOrCollapse}>
+      <ImageStyled src={ArrowDown} />
+    </ButtonStyled>
+  </Root>
+);
