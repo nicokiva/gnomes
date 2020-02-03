@@ -9,8 +9,9 @@ export type GnomeFiltersEvaluationFnType = (
 ) => boolean;
 
 export type GnomeFiltersType = Partial<
-  Pick<GnomeType, 'name' | 'hair_color' | 'professions' | 'genre'>
+  Pick<GnomeType, 'name' | 'professions' | 'genre'>
 > & {
+  hairColor?: Array<GnomeType['hair_color']>;
   ageRange?: Array<GnomeType['age']>;
 
   weightRange?: Array<GnomeType['weight']>;

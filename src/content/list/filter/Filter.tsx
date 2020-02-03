@@ -6,10 +6,12 @@ import Search from '../../../images/search.png';
 import { Input } from './input/Input';
 import { Button } from '@material-ui/core';
 import { Slider } from './slider/Slider';
+import { Select } from './select/Select';
 
-const Root = styled.div`
+const Root = styled.div<{ isExpanded: boolean }>`
   display: flex;
   flex-direction: column;
+  ${props => (props.isExpanded ? 'height: 80%;' : '')}
   position: fixed;
   width: 100%;
 `;
@@ -19,7 +21,7 @@ const FiltersStyled = styled.div<{ isExpanded: boolean }>`
   color: #000;
   display: ${props => (props.isExpanded ? 'flex' : 'none')};
   flex-direction: column;
-  height: 500px;
+  height: 95%;
   padding: 0 20px 20px;
 `;
 
@@ -79,6 +81,7 @@ export type FilterProps = {
   onChangeAgeRange: (event: any, newValue: number | number[]) => void;
   onChangeWeightRange: (event: any, newValue: number | number[]) => void;
   onChangeHeightRange: (event: any, newValue: number | number[]) => void;
+  onChangeHairColor: (event: React.ChangeEvent<{ value: unknown }>) => void;
 
   name: string;
   ageRange: Array<number>;
@@ -87,6 +90,8 @@ export type FilterProps = {
   availableWeightRange: Array<number>;
   heightRange: Array<number>;
   availableHeightRange: Array<number>;
+  hairColor: Array<string>;
+  availableHairColor: Array<string>;
 };
 
 export const Filter: React.FC<FilterProps> = ({
@@ -104,9 +109,12 @@ export const Filter: React.FC<FilterProps> = ({
   weightRange,
   availableWeightRange,
   heightRange,
-  availableHeightRange
+  availableHeightRange,
+  hairColor,
+  availableHairColor,
+  onChangeHairColor
 }) => (
-  <Root>
+  <Root isExpanded={isExpanded}>
     <FiltersStyled isExpanded={isExpanded}>
       <h2>Filters</h2>
 
@@ -150,6 +158,15 @@ export const Filter: React.FC<FilterProps> = ({
           valueLabelDisplay='auto'
           onChange={onChangeHeightRange}
           marks={availableHeightRange.map(value => ({ value, label: value }))}
+        />
+
+        <Select
+          onChange={onChangeHairColor}
+          suggestions={availableHairColor.map(hairColor => ({
+            key: hairColor,
+            label: hairColor
+          }))}
+          value={hairColor}
         />
       </FiltersInputStyled>
       <SearchToolbar>

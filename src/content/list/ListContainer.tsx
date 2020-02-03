@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GnomeType, GnomeFiltersType } from '../../models/Gnome';
 import { useParams } from 'react-router-dom';
-import { gnomesService, RangesType } from '../../services/GnomesService';
+import { gnomesService, MetadataType } from '../../services/GnomesService';
 import { List, ListProps } from './List';
 import { history } from '../../App';
 
@@ -13,7 +13,7 @@ export const ListContainer: React.FC<ListContainerProps> = () => {
   const [gnomes, setGnomes] = useState<Array<GnomeType> | undefined | null>(
     undefined
   );
-  const [ranges, setRanges] = useState<RangesType | undefined | null>(
+  const [metadata, setMetadata] = useState<MetadataType | undefined | null>(
     undefined
   );
 
@@ -27,8 +27,8 @@ export const ListContainer: React.FC<ListContainerProps> = () => {
     gnomesService.getGnomes(pivotId, filters).then(newGnomes => {
       setGnomes(newGnomes);
 
-      return gnomesService.getRanges().then(ranges => {
-        setRanges(ranges);
+      return gnomesService.getMetadata().then(ranges => {
+        setMetadata(ranges);
         return newGnomes;
       });
     });
@@ -69,7 +69,7 @@ export const ListContainer: React.FC<ListContainerProps> = () => {
 
   return (
     <List
-      ranges={ranges}
+      metadata={metadata}
       filters={filters}
       onApplyFilters={handleApplyFilters}
       gnomes={gnomes}

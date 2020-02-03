@@ -1,20 +1,19 @@
 import React, { useState } from 'react';
 import { Filter, FilterProps } from './Filter';
 import { GnomeFiltersType } from '../../../models/Gnome';
+import { MetadataType } from '../../../services/GnomesService';
 
 export type FilterContainerProps = {
   onApplyFilters: (filters: GnomeFiltersType) => void;
   defaultFilters?: GnomeFiltersType;
 
-  availableHeightRange: FilterProps['availableHeightRange'];
-  availableWeightRange: FilterProps['availableWeightRange'];
-  availableAgeRange: FilterProps['availableAgeRange'];
+  metadata: MetadataType;
 };
 
 export const FilterContainer: React.FC<FilterContainerProps> = ({
   onApplyFilters: onApplyFilter,
   defaultFilters,
-  ...availableProps
+  metadata
 }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [name, setName] = useState<FilterProps['name']>(
@@ -24,29 +23,33 @@ export const FilterContainer: React.FC<FilterContainerProps> = ({
   const [ageRange, setAgeRange] = useState<FilterProps['ageRange']>([
     defaultFilters?.ageRange !== undefined
       ? defaultFilters?.ageRange[0]
-      : availableProps.availableAgeRange[0],
+      : metadata.availableAgeRange[0] || 0,
     defaultFilters?.ageRange !== undefined
       ? defaultFilters?.ageRange[1]
-      : availableProps.availableAgeRange[1]
+      : metadata.availableAgeRange[1] || 1000
   ]);
 
   const [weightRange, setWeightRange] = useState<FilterProps['weightRange']>([
     defaultFilters?.weightRange !== undefined
       ? defaultFilters?.weightRange[0]
-      : availableProps.availableWeightRange[0],
+      : metadata.availableWeightRange[0] || 0,
     defaultFilters?.weightRange !== undefined
       ? defaultFilters?.weightRange[1]
-      : availableProps.availableWeightRange[1]
+      : metadata.availableWeightRange[1] || 1000
   ]);
 
   const [heightRange, setHeightRange] = useState<FilterProps['heightRange']>([
     defaultFilters?.heightRange !== undefined
       ? defaultFilters?.heightRange[0]
-      : availableProps.availableHeightRange[0],
+      : metadata.availableHeightRange[0] || 0,
     defaultFilters?.heightRange !== undefined
       ? defaultFilters?.heightRange[1]
-      : availableProps.availableHeightRange[1]
+      : metadata.availableHeightRange[1] || 1000
   ]);
+
+  const [hairColor, setHairColor] = useState<FilterProps['hairColor']>(
+    defaultFilters?.hairColor !== undefined ? defaultFilters.hairColor : []
+  );
 
   const handleExpandOrCollapse = () => {
     setIsExpanded(!isExpanded);
@@ -62,7 +65,8 @@ export const FilterContainer: React.FC<FilterContainerProps> = ({
       name,
       ageRange,
       weightRange,
-      heightRange
+      heightRange,
+      hairColor
     };
 
     handleExpandOrCollapse();
@@ -85,11 +89,19 @@ export const FilterContainer: React.FC<FilterContainerProps> = ({
     setName(event.target.value);
   };
 
+  const handleChangeHairColor = (
+    event: React.ChangeEvent<{ value: unknown }>
+  ) => {
+    setHairColor(event.target.value as string[]);
+  };
+
   return (
     <Filter
+      hairColor={hairColor}
       heightRange={heightRange}
       onChangeHeightRange={handleChangeHeightRange}
       onChangeWeightRange={handleChangeWeightRange}
+      onChangeHairColor={handleChangeHairColor}
       weightRange={weightRange}
       ageRange={ageRange}
       name={name}
@@ -99,7 +111,7 @@ export const FilterContainer: React.FC<FilterContainerProps> = ({
       onChangeName={handleChangeName}
       isExpanded={isExpanded}
       onExpandOrCollapse={handleExpandOrCollapse}
-      {...availableProps}
+      {...metadata}
     />
   );
 };

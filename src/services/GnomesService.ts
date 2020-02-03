@@ -4,7 +4,7 @@ import {
   GnomeFiltersType,
   GnomeFiltersEvaluationFnType
 } from '../models/Gnome';
-import { sortBy, max, min } from 'lodash';
+import { sortBy, max, min, uniq } from 'lodash';
 import { cacheService } from './CacheService';
 
 type ResponseType<T> =
@@ -17,10 +17,11 @@ type ResponseType<T> =
       data: null;
     };
 
-export type RangesType = {
+export type MetadataType = {
   availableAgeRange: Array<number>;
   availableHeightRange: Array<number>;
   availableWeightRange: Array<number>;
+  availableHairColor: Array<string>;
 };
 
 type ToValidateValueType = Parameters<GnomeFiltersEvaluationFnType>[0];
@@ -32,6 +33,16 @@ const inclusionValidationFn: GnomeFiltersEvaluationFnType = (
 ) =>
   (typeof valueToValidate === 'string' &&
     valueToValidate.toLowerCase().includes(String(filter).toLowerCase())) ||
+  false;
+
+const isAnOptionOfValidationFn: GnomeFiltersEvaluationFnType = (
+  valueToValidate: ToValidateValueType,
+  filter: ValidationValueType
+) =>
+  (typeof valueToValidate === 'string' &&
+    (filter as Array<string>)
+      .map(value => value.toLowerCase())
+      .includes(valueToValidate.toLowerCase())) ||
   false;
 
 const inRangeValidationFn: GnomeFiltersEvaluationFnType = (
@@ -65,7 +76,7 @@ const validations: {
     fn: inRangeValidationFn
   },
   genre: inclusionValidationFn,
-  hair_color: inclusionValidationFn,
+  hairColor: { propertyReferenced: 'hair_color', fn: isAnOptionOfValidationFn },
   professions: inclusionValidationFn
 };
 
@@ -167,7 +178,6 @@ class GnomesService {
         }
 
         const referencedValidator = validator as ReferencedPropertyEvaluationFnType;
-        debugger;
 
         return referencedValidator.fn(
           gnome[referencedValidator.propertyReferenced],
@@ -176,7 +186,7 @@ class GnomesService {
       });
   }
 
-  async getRanges(): Promise<RangesType | null> {
+  async getMetadata(): Promise<MetadataType | null> {
     const gnomes = await this.getAllGnomes();
 
     if (gnomes === null) {
@@ -186,6 +196,7 @@ class GnomesService {
     const ages = gnomes?.map(({ age }) => age);
     const heights = gnomes?.map(({ height }) => height);
     const weights = gnomes?.map(({ weight }) => weight);
+    const hairColors = gnomes.map(({ hair_color }) => hair_color);
 
     return {
       availableAgeRange: [min(ages) || 0, max(ages) || 1000],
@@ -196,7 +207,8 @@ class GnomesService {
       availableWeightRange: [
         Math.floor(min(weights) || 0),
         Math.ceil(max(weights) || 1000)
-      ]
+      ],
+      availableHairColor: uniq(hairColors)
     };
   }
 

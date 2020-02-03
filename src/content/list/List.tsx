@@ -7,7 +7,7 @@ import {
   FilterContainer,
   FilterContainerProps
 } from './filter/FilterContainer';
-import { RangesType } from '../../services/GnomesService';
+import { MetadataType } from '../../services/GnomesService';
 
 const Root = styled.div``;
 
@@ -28,7 +28,7 @@ export type ListProps = {
   isLoading: boolean;
   isErrored: boolean;
   filters: FilterContainerProps['defaultFilters'];
-  ranges: RangesType | undefined | null;
+  metadata: MetadataType | undefined | null;
 } & Pick<FilterContainerProps, 'onApplyFilters'>;
 
 export const List: React.FC<ListProps> = ({
@@ -39,7 +39,7 @@ export const List: React.FC<ListProps> = ({
   isErrored,
   filters,
   onApplyFilters,
-  ranges
+  metadata
 }) => {
   const ref = useRef<HTMLUListElement>(null);
 
@@ -51,7 +51,6 @@ export const List: React.FC<ListProps> = ({
         return;
       }
 
-      debugger;
       if (
         window.innerHeight + window.scrollY >=
         event.target.documentElement.offsetHeight - 102 * 2
@@ -82,8 +81,8 @@ export const List: React.FC<ListProps> = ({
   if (
     gnomes === null ||
     gnomes === undefined ||
-    ranges === null ||
-    ranges === undefined
+    metadata === null ||
+    metadata === undefined
   ) {
     return <></>;
   }
@@ -93,7 +92,7 @@ export const List: React.FC<ListProps> = ({
       <FilterContainer
         defaultFilters={filters}
         onApplyFilters={onApplyFilters}
-        {...ranges}
+        metadata={metadata}
       />
 
       <ListStyled ref={ref}>
