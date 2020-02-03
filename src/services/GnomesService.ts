@@ -1,6 +1,11 @@
 import axios from 'axios';
-import { GnomeType, GnomeFiltersType } from '../models/Gnome';
-import { sortBy } from 'lodash';
+import {
+  GnomeType,
+  GnomeFiltersType,
+  GnomeFiltersEvaluationFnType
+} from '../models/Gnome';
+import { sortBy, max, min } from 'lodash';
+import { cacheService } from './CacheService';
 
 type ResponseType<T> =
   | {
@@ -12,17 +17,59 @@ type ResponseType<T> =
       data: null;
     };
 
-const cacheGnomesKey = 'GNOMES_CACHE_KEY';
+export type RangesType = {
+  availableAgeRange: Array<number>;
+  availableHeightRange: Array<number>;
+  availableWeightRange: Array<number>;
+};
+
+type ToValidateValueType = Parameters<GnomeFiltersEvaluationFnType>[0];
+type ValidationValueType = Parameters<GnomeFiltersEvaluationFnType>[1];
+
+const inclusionValidationFn: GnomeFiltersEvaluationFnType = (
+  valueToValidate: ToValidateValueType,
+  filter: ValidationValueType
+) =>
+  (typeof valueToValidate === 'string' &&
+    valueToValidate.toLowerCase().includes(String(filter).toLowerCase())) ||
+  false;
+
+const inRangeValidationFn: GnomeFiltersEvaluationFnType = (
+  valueToValidate: ToValidateValueType,
+  filter: ValidationValueType
+) =>
+  (typeof valueToValidate === 'number' &&
+    Array.isArray(filter) &&
+    Number(valueToValidate) >= Number((filter as Array<Number>)[0]) &&
+    Number(valueToValidate) <= Number((filter as Array<Number>)[1])) ||
+  false;
+
+type ReferencedPropertyEvaluationFnType = {
+  propertyReferenced: keyof Omit<GnomeType, 'friends_linked'>;
+  fn: GnomeFiltersEvaluationFnType;
+};
+
+const validations: {
+  [key in keyof GnomeFiltersType]:
+    | ReferencedPropertyEvaluationFnType
+    | GnomeFiltersEvaluationFnType;
+} = {
+  name: inclusionValidationFn,
+  ageRange: { propertyReferenced: 'age', fn: inRangeValidationFn },
+  weightRange: {
+    propertyReferenced: 'weight',
+    fn: inRangeValidationFn
+  },
+  heightRange: {
+    propertyReferenced: 'height',
+    fn: inRangeValidationFn
+  },
+  genre: inclusionValidationFn,
+  hair_color: inclusionValidationFn,
+  professions: inclusionValidationFn
+};
 
 class GnomesService {
-  private getCachedGnomes(): Array<GnomeType> | undefined {
-    const gnomes = localStorage.getItem(cacheGnomesKey);
-
-    return gnomes !== null
-      ? ((JSON.parse(gnomes) as unknown) as Array<GnomeType>)
-      : undefined;
-  }
-
   private async loadGnomes(): Promise<ResponseType<Array<GnomeType>>> {
     try {
       const response = await axios.get<{ Brastlewark: Array<GnomeType> }>(
@@ -43,7 +90,8 @@ class GnomesService {
           gnomes.find(currentGnome => currentGnome.name === friendName)
         )
       }));
-      localStorage.setItem(cacheGnomesKey, JSON.stringify(data));
+
+      cacheService.set('GNOMES', data);
 
       return {
         success: true,
@@ -98,14 +146,71 @@ class GnomesService {
   }
 
   applyFilters(gnome: GnomeType, filters: GnomeFiltersType) {
-    if (
-      filters.name !== undefined &&
-      gnome.name.includes(filters.name) === false
-    ) {
-      return false;
+    return Object.keys(filters)
+      .filter(key => filters[key as keyof GnomeFiltersType] !== undefined)
+      .every(key => {
+        const validator = validations[key as keyof GnomeFiltersType];
+        if (validator === undefined) {
+          return true;
+        }
+
+        const filter = filters[key as keyof GnomeFiltersType];
+        if (filter === undefined) {
+          return true;
+        }
+
+        if (typeof validator === 'function') {
+          return validator(
+            gnome[key as keyof Omit<GnomeType, 'friends_linked'>],
+            filter
+          );
+        }
+
+        const referencedValidator = validator as ReferencedPropertyEvaluationFnType;
+        debugger;
+
+        return referencedValidator.fn(
+          gnome[referencedValidator.propertyReferenced],
+          filter
+        );
+      });
+  }
+
+  async getRanges(): Promise<RangesType | null> {
+    const gnomes = await this.getAllGnomes();
+
+    if (gnomes === null) {
+      return null;
     }
 
-    return true;
+    const ages = gnomes?.map(({ age }) => age);
+    const heights = gnomes?.map(({ height }) => height);
+    const weights = gnomes?.map(({ weight }) => weight);
+
+    return {
+      availableAgeRange: [min(ages) || 0, max(ages) || 1000],
+      availableHeightRange: [
+        Math.floor(min(heights) || 0),
+        Math.ceil(max(heights) || 1000)
+      ],
+      availableWeightRange: [
+        Math.floor(min(weights) || 0),
+        Math.ceil(max(weights) || 1000)
+      ]
+    };
+  }
+
+  async getAllGnomes(): Promise<Array<GnomeType> | null> {
+    const loadGnomes = async () => {
+      const response = await this.loadGnomes();
+      if (response.success === false) {
+        return null;
+      }
+
+      return response.data;
+    };
+
+    return await (cacheService.get<Array<GnomeType>>('GNOMES') || loadGnomes());
   }
 
   async getGnomes(
@@ -113,15 +218,10 @@ class GnomesService {
     filters: GnomeFiltersType | undefined = undefined,
     amount: number = 20
   ): Promise<Array<GnomeType> | null> {
-    let gnomes = this.getCachedGnomes();
+    const gnomes = await this.getAllGnomes();
 
-    if (gnomes === undefined) {
-      const response = await this.loadGnomes();
-      if (response.success === false) {
-        return null;
-      }
-
-      gnomes = response.data;
+    if (gnomes === null) {
+      return null;
     }
 
     const filteredGnomes = gnomes.filter(
@@ -130,8 +230,8 @@ class GnomesService {
         (filters !== undefined && this.applyFilters(gnome, filters) === true)
     );
 
-    return filteredGnomes.length > amount
-      ? this.getSublist(filteredGnomes, pivotId || gnomes[0].id, amount)
+    return filteredGnomes.length > 0
+      ? this.getSublist(filteredGnomes, pivotId || filteredGnomes[0].id, amount)
       : filteredGnomes;
   }
 }

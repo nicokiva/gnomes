@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Switch, Router } from 'react-router-dom';
+import { Route, Switch, Router, Redirect } from 'react-router-dom';
 import { createBrowserHistory } from 'history';
 import { ListContainer } from './content/list/ListContainer';
 
@@ -11,6 +11,7 @@ const App: React.FC = () => {
       <Switch>
         <Route exact path='/gnomes' component={ListContainer} />
         <Route exact path='/gnomes/:id' component={ListContainer} />
+        <Redirect exact from='/' to='/gnomes' />
       </Switch>
     </Router>
   );

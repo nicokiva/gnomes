@@ -5,7 +5,10 @@ import TextField, { TextFieldProps } from '@material-ui/core/TextField';
 type InputProps = TextFieldProps;
 
 const TextFieldStyled = styled(TextField)`
-  width: 100%;
+  && {
+    margin-bottom: 20px;
+    width: 100%;
+  }
 `;
 
 export const Input: React.FC<InputProps> = props => (

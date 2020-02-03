@@ -3,17 +3,19 @@ enum Genre {
   Female
 }
 
+export type GnomeFiltersEvaluationFnType = (
+  toValidate: string | number | Array<string> | undefined,
+  filter: string | number | Array<string> | Array<number>
+) => boolean;
+
 export type GnomeFiltersType = Partial<
   Pick<GnomeType, 'name' | 'hair_color' | 'professions' | 'genre'>
 > & {
-  minAge?: GnomeType['age'];
-  maxAge?: GnomeType['age'];
+  ageRange?: Array<GnomeType['age']>;
 
-  minWeight?: GnomeType['weight'];
-  maxWeight?: GnomeType['weight'];
+  weightRange?: Array<GnomeType['weight']>;
 
-  minHeight?: GnomeType['height'];
-  maxHeight?: GnomeType['height'];
+  heightRange?: Array<GnomeType['height']>;
 };
 
 export type GnomeType = {
