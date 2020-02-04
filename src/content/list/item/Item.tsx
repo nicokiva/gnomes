@@ -128,7 +128,7 @@ export const Item: React.FC<ItemProps> = props => {
               props.item.friends_linked.length > 0 && (
                 <QuestionAnswer
                   question='Friends'
-                  answer={props.item.friends_linked.map(friend =>
+                  answer={props.item.friends_linked.map((friend, index) =>
                     friend !== undefined ? (
                       <FriendStyled
                         key={friend.id}
@@ -137,7 +137,7 @@ export const Item: React.FC<ItemProps> = props => {
                         }}
                       >
                         {friend.name}
-                        {', '}
+                        {index !== props.item.friends.length - 1 && ', '}
                       </FriendStyled>
                     ) : (
                       undefined
