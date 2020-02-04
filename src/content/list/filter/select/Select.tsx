@@ -11,22 +11,21 @@ import {
 import styled from 'styled-components';
 
 const FormControlStyled = styled(FormControl)`
+  margin-bottom: 5px;
   width: 100%;
 `;
 
 type SelectProps = MaterialSelectProps & {
   suggestions: Array<{ label: string; key: string }>;
+  label: string;
 };
 
 export const Select: React.FC<SelectProps> = props => (
   <FormControlStyled>
-    <InputLabel id='demo-mutiple-chip-label'>Hair Color</InputLabel>
+    <InputLabel id='demo-mutiple-chip-label'>{props.label}</InputLabel>
     <MaterialSelect
       labelId='demo-mutiple-chip-label'
       id='demo-mutiple-chip'
-      multiple
-      value={props.value}
-      onChange={props.onChange}
       input={<Input id='select-multiple-chip' />}
       renderValue={selected => (
         <div>
@@ -35,6 +34,7 @@ export const Select: React.FC<SelectProps> = props => (
           ))}
         </div>
       )}
+      {...props}
     >
       {props.suggestions.map(suggestion => (
         <MenuItem key={suggestion.key} value={suggestion.key}>

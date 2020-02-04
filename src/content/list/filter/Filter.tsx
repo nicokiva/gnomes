@@ -7,6 +7,7 @@ import { Input } from './input/Input';
 import { Button } from '@material-ui/core';
 import { Slider } from './slider/Slider';
 import { Select } from './select/Select';
+import { Checkbox } from './checkbox/Checkbox';
 
 const Root = styled.div<{ isExpanded: boolean }>`
   display: flex;
@@ -82,6 +83,10 @@ export type FilterProps = {
   onChangeWeightRange: (event: any, newValue: number | number[]) => void;
   onChangeHeightRange: (event: any, newValue: number | number[]) => void;
   onChangeHairColor: (event: React.ChangeEvent<{ value: unknown }>) => void;
+  onChangeProfessions: (event: React.ChangeEvent<{ value: unknown }>) => void;
+  onChangeProfessionsExclusion: (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => void;
 
   name: string;
   ageRange: Array<number>;
@@ -92,6 +97,9 @@ export type FilterProps = {
   availableHeightRange: Array<number>;
   hairColor: Array<string>;
   availableHairColor: Array<string>;
+  professions: Array<string>;
+  availableProfessions: Array<string>;
+  professionsExclusion: boolean;
 };
 
 export const Filter: React.FC<FilterProps> = ({
@@ -112,7 +120,12 @@ export const Filter: React.FC<FilterProps> = ({
   availableHeightRange,
   hairColor,
   availableHairColor,
-  onChangeHairColor
+  onChangeHairColor,
+  professions,
+  availableProfessions,
+  onChangeProfessions,
+  onChangeProfessionsExclusion,
+  professionsExclusion
 }) => (
   <Root isExpanded={isExpanded}>
     <FiltersStyled isExpanded={isExpanded}>
@@ -161,12 +174,31 @@ export const Filter: React.FC<FilterProps> = ({
         />
 
         <Select
+          label='Hair Color'
           onChange={onChangeHairColor}
+          multiple
           suggestions={availableHairColor.map(hairColor => ({
             key: hairColor,
             label: hairColor
           }))}
           value={hairColor}
+        />
+
+        <Select
+          label='Professions'
+          onChange={onChangeProfessions}
+          multiple
+          suggestions={availableProfessions.map(profession => ({
+            key: profession,
+            label: profession
+          }))}
+          value={professions}
+        />
+        <Checkbox
+          label='All?'
+          onChange={onChangeProfessionsExclusion}
+          value={professionsExclusion}
+          checked={professionsExclusion}
         />
       </FiltersInputStyled>
       <SearchToolbar>

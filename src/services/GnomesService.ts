@@ -22,6 +22,7 @@ export type MetadataType = {
   availableHeightRange: Array<number>;
   availableWeightRange: Array<number>;
   availableHairColor: Array<string>;
+  availableProfessions: Array<string>;
 };
 
 type ToValidateValueType = Parameters<GnomeFiltersEvaluationFnType>[0];
@@ -35,15 +36,51 @@ const inclusionValidationFn: GnomeFiltersEvaluationFnType = (
     valueToValidate.toLowerCase().includes(String(filter).toLowerCase())) ||
   false;
 
-const isAnOptionOfValidationFn: GnomeFiltersEvaluationFnType = (
+const isOneOfValidationFn: GnomeFiltersEvaluationFnType = (
   valueToValidate: ToValidateValueType,
   filter: ValidationValueType
 ) =>
   (typeof valueToValidate === 'string' &&
-    (filter as Array<string>)
-      .map(value => value.toLowerCase())
-      .includes(valueToValidate.toLowerCase())) ||
+    ((filter as Array<string>).length === 0 ||
+      (filter as Array<string>)
+        .map(value => value.toLowerCase())
+        .includes(valueToValidate.toLowerCase()))) ||
   false;
+
+const isIncludedInValidationFn: GnomeFiltersEvaluationFnType = (
+  valueToValidate: ToValidateValueType,
+  filter: ValidationValueType,
+  allFilters?: GnomeFiltersType
+) => {
+  if (
+    !Array.isArray(valueToValidate) ||
+    !Array.isArray(filter) ||
+    allFilters === undefined
+  ) {
+    return false;
+  }
+
+  const gnomeProfessions = (valueToValidate as Array<string>).map(value =>
+    value.toLowerCase()
+  );
+
+  if ((filter as Array<string>).length === 0) {
+    return true;
+  }
+
+  const mappedFilters = (filter as Array<string>).map(value =>
+    value.toLowerCase()
+  );
+
+  return (
+    (allFilters.professionsExclusion === false &&
+      mappedFilters.some(profession =>
+        gnomeProfessions.includes(profession)
+      )) ||
+    (allFilters.professionsExclusion === true &&
+      mappedFilters.every(profession => gnomeProfessions.includes(profession)))
+  );
+};
 
 const inRangeValidationFn: GnomeFiltersEvaluationFnType = (
   valueToValidate: ToValidateValueType,
@@ -61,7 +98,7 @@ type ReferencedPropertyEvaluationFnType = {
 };
 
 const validations: {
-  [key in keyof GnomeFiltersType]:
+  [key in keyof Omit<GnomeFiltersType, 'professionsExclusion'>]:
     | ReferencedPropertyEvaluationFnType
     | GnomeFiltersEvaluationFnType;
 } = {
@@ -76,8 +113,8 @@ const validations: {
     fn: inRangeValidationFn
   },
   genre: inclusionValidationFn,
-  hairColor: { propertyReferenced: 'hair_color', fn: isAnOptionOfValidationFn },
-  professions: inclusionValidationFn
+  hairColor: { propertyReferenced: 'hair_color', fn: isOneOfValidationFn },
+  professions: isIncludedInValidationFn
 };
 
 class GnomesService {
@@ -160,12 +197,16 @@ class GnomesService {
     return Object.keys(filters)
       .filter(key => filters[key as keyof GnomeFiltersType] !== undefined)
       .every(key => {
-        const validator = validations[key as keyof GnomeFiltersType];
+        const validator =
+          validations[
+            key as keyof Omit<GnomeFiltersType, 'professionsExclusion'>
+          ];
         if (validator === undefined) {
           return true;
         }
 
-        const filter = filters[key as keyof GnomeFiltersType];
+        const filter =
+          filters[key as keyof Omit<GnomeFiltersType, 'professionsExclusion'>];
         if (filter === undefined) {
           return true;
         }
@@ -173,7 +214,8 @@ class GnomesService {
         if (typeof validator === 'function') {
           return validator(
             gnome[key as keyof Omit<GnomeType, 'friends_linked'>],
-            filter
+            filter,
+            filters
           );
         }
 
@@ -181,7 +223,8 @@ class GnomesService {
 
         return referencedValidator.fn(
           gnome[referencedValidator.propertyReferenced],
-          filter
+          filter,
+          filters
         );
       });
   }
@@ -196,7 +239,20 @@ class GnomesService {
     const ages = gnomes?.map(({ age }) => age);
     const heights = gnomes?.map(({ height }) => height);
     const weights = gnomes?.map(({ weight }) => weight);
-    const hairColors = gnomes.map(({ hair_color }) => hair_color);
+    const hairColors = sortBy(
+      gnomes.map(({ hair_color }) => hair_color),
+      word => word.toLowerCase()
+    );
+    const professions = sortBy(
+      gnomes.reduce<Array<string>>(
+        (acc, gnome) => [
+          ...acc,
+          ...gnome.professions.map(profession => profession.trim())
+        ],
+        []
+      ),
+      word => word.toLowerCase()
+    );
 
     return {
       availableAgeRange: [min(ages) || 0, max(ages) || 1000],
@@ -208,7 +264,8 @@ class GnomesService {
         Math.floor(min(weights) || 0),
         Math.ceil(max(weights) || 1000)
       ],
-      availableHairColor: uniq(hairColors)
+      availableHairColor: uniq(hairColors),
+      availableProfessions: uniq(professions)
     };
   }
 

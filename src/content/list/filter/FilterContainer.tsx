@@ -11,7 +11,7 @@ export type FilterContainerProps = {
 };
 
 export const FilterContainer: React.FC<FilterContainerProps> = ({
-  onApplyFilters: onApplyFilter,
+  onApplyFilters,
   defaultFilters,
   metadata
 }) => {
@@ -51,13 +51,21 @@ export const FilterContainer: React.FC<FilterContainerProps> = ({
     defaultFilters?.hairColor !== undefined ? defaultFilters.hairColor : []
   );
 
+  const [professions, setProfessions] = useState<FilterProps['professions']>(
+    defaultFilters?.professions !== undefined ? defaultFilters.professions : []
+  );
+
+  const [professionsExclusion, setProfessionsExclusion] = useState<
+    FilterProps['professionsExclusion']
+  >(defaultFilters?.professionsExclusion || false);
+
   const handleExpandOrCollapse = () => {
     setIsExpanded(!isExpanded);
   };
 
   const handleResetFilter = () => {
     handleExpandOrCollapse();
-    onApplyFilter({});
+    onApplyFilters({});
   };
 
   const handleApplyFilter = () => {
@@ -66,11 +74,13 @@ export const FilterContainer: React.FC<FilterContainerProps> = ({
       ageRange,
       weightRange,
       heightRange,
-      hairColor
+      hairColor,
+      professions,
+      professionsExclusion
     };
 
     handleExpandOrCollapse();
-    onApplyFilter(filters);
+    onApplyFilters(filters);
   };
 
   const handleChangeAge = (event: any, newValue: number | number[]) => {
@@ -89,14 +99,30 @@ export const FilterContainer: React.FC<FilterContainerProps> = ({
     setName(event.target.value);
   };
 
+  const handleChangeProfessions = (
+    event: React.ChangeEvent<{ value: unknown }>
+  ) => {
+    setProfessions(event.target.value as string[]);
+  };
+
   const handleChangeHairColor = (
     event: React.ChangeEvent<{ value: unknown }>
   ) => {
     setHairColor(event.target.value as string[]);
   };
 
+  const handleChangeProfessionsExclusion = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setProfessionsExclusion(event.target.checked);
+  };
+
   return (
     <Filter
+      professionsExclusion={professionsExclusion}
+      onChangeProfessionsExclusion={handleChangeProfessionsExclusion}
+      professions={professions}
+      onChangeProfessions={handleChangeProfessions}
       hairColor={hairColor}
       heightRange={heightRange}
       onChangeHeightRange={handleChangeHeightRange}

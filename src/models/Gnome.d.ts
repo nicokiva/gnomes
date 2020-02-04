@@ -5,18 +5,22 @@ enum Genre {
 
 export type GnomeFiltersEvaluationFnType = (
   toValidate: string | number | Array<string> | undefined,
-  filter: string | number | Array<string> | Array<number>
+  filter: string | number | Array<string> | Array<number>,
+  allFilters?: GnomeFiltersType
 ) => boolean;
 
 export type GnomeFiltersType = Partial<
   Pick<GnomeType, 'name' | 'professions' | 'genre'>
 > & {
   hairColor?: Array<GnomeType['hair_color']>;
+
   ageRange?: Array<GnomeType['age']>;
 
   weightRange?: Array<GnomeType['weight']>;
 
   heightRange?: Array<GnomeType['height']>;
+
+  professionsExclusion?: boolean;
 };
 
 export type GnomeType = {
