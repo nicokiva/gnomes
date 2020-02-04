@@ -8,6 +8,7 @@ import { Button } from '@material-ui/core';
 import { Slider } from './slider/Slider';
 import { Select } from './select/Select';
 import { Checkbox } from './checkbox/Checkbox';
+import { Genre } from '../../../models/Gnome';
 
 const Root = styled.div<{ isExpanded: boolean }>`
   display: flex;
@@ -73,6 +74,13 @@ const SearchToolbar = styled.div`
   text-align: right;
 `;
 
+const ProfessionsFilterContainer = styled.div`
+  display: flex;
+`;
+const ProfessionsSelectStyled = styled(Select)`
+  width: 80%;
+`;
+
 export type FilterProps = {
   isExpanded: boolean;
   onExpandOrCollapse: () => void;
@@ -87,6 +95,7 @@ export type FilterProps = {
   onChangeProfessionsExclusion: (
     event: React.ChangeEvent<HTMLInputElement>
   ) => void;
+  onChangeGenre: (event: React.ChangeEvent<{ value: unknown }>) => void;
 
   name: string;
   ageRange: Array<number>;
@@ -100,6 +109,8 @@ export type FilterProps = {
   professions: Array<string>;
   availableProfessions: Array<string>;
   professionsExclusion: boolean;
+  availableGenres: Array<Genre>;
+  genre?: Genre;
 };
 
 export const Filter: React.FC<FilterProps> = ({
@@ -125,7 +136,10 @@ export const Filter: React.FC<FilterProps> = ({
   availableProfessions,
   onChangeProfessions,
   onChangeProfessionsExclusion,
-  professionsExclusion
+  professionsExclusion,
+  onChangeGenre,
+  availableGenres,
+  genre
 }) => (
   <Root isExpanded={isExpanded}>
     <FiltersStyled isExpanded={isExpanded}>
@@ -184,23 +198,37 @@ export const Filter: React.FC<FilterProps> = ({
           value={hairColor}
         />
 
+        <ProfessionsFilterContainer>
+          <ProfessionsSelectStyled
+            label='Professions'
+            onChange={onChangeProfessions}
+            multiple
+            suggestions={availableProfessions.map(profession => ({
+              key: profession,
+              label: profession
+            }))}
+            value={professions}
+          />
+
+          <Checkbox
+            label='All?'
+            onChange={onChangeProfessionsExclusion}
+            value={professionsExclusion}
+            checked={professionsExclusion}
+          />
+        </ProfessionsFilterContainer>
+
         <Select
-          label='Professions'
-          onChange={onChangeProfessions}
-          multiple
-          suggestions={availableProfessions.map(profession => ({
-            key: profession,
-            label: profession
+          label='Genre'
+          onChange={onChangeGenre}
+          suggestions={availableGenres.map(genre => ({
+            key: genre,
+            label: genre
           }))}
-          value={professions}
-        />
-        <Checkbox
-          label='All?'
-          onChange={onChangeProfessionsExclusion}
-          value={professionsExclusion}
-          checked={professionsExclusion}
+          value={genre}
         />
       </FiltersInputStyled>
+
       <SearchToolbar>
         <ResetButtonStyled
           endIcon={<ImageStyled src={Search} />}

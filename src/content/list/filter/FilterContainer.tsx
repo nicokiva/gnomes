@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Filter, FilterProps } from './Filter';
-import { GnomeFiltersType } from '../../../models/Gnome';
+import { GnomeFiltersType, Genre } from '../../../models/Gnome';
 import { MetadataType } from '../../../services/GnomesService';
 
 export type FilterContainerProps = {
@@ -59,6 +59,10 @@ export const FilterContainer: React.FC<FilterContainerProps> = ({
     FilterProps['professionsExclusion']
   >(defaultFilters?.professionsExclusion || false);
 
+  const [genre, setGenre] = useState<FilterProps['genre']>(
+    defaultFilters?.genre
+  );
+
   const handleExpandOrCollapse = () => {
     setIsExpanded(!isExpanded);
   };
@@ -76,7 +80,8 @@ export const FilterContainer: React.FC<FilterContainerProps> = ({
       heightRange,
       hairColor,
       professions,
-      professionsExclusion
+      professionsExclusion,
+      genre
     };
 
     handleExpandOrCollapse();
@@ -117,8 +122,14 @@ export const FilterContainer: React.FC<FilterContainerProps> = ({
     setProfessionsExclusion(event.target.checked);
   };
 
+  const handleChangeGenre = (event: React.ChangeEvent<{ value: unknown }>) => {
+    setGenre(event.target.value as Genre);
+  };
+
   return (
     <Filter
+      genre={genre}
+      onChangeGenre={handleChangeGenre}
       professionsExclusion={professionsExclusion}
       onChangeProfessionsExclusion={handleChangeProfessionsExclusion}
       professions={professions}

@@ -1,11 +1,13 @@
 import axios from 'axios';
-import {
-  GnomeType,
-  GnomeFiltersType,
-  GnomeFiltersEvaluationFnType
-} from '../models/Gnome';
+
 import { sortBy, max, min, uniq } from 'lodash';
 import { cacheService } from './CacheService';
+import {
+  GnomeFiltersEvaluationFnType,
+  GnomeFiltersType,
+  GnomeType,
+  Genre
+} from '../models/Gnome';
 
 type ResponseType<T> =
   | {
@@ -23,6 +25,7 @@ export type MetadataType = {
   availableWeightRange: Array<number>;
   availableHairColor: Array<string>;
   availableProfessions: Array<string>;
+  availableGenres: Array<Genre>;
 };
 
 type ToValidateValueType = Parameters<GnomeFiltersEvaluationFnType>[0];
@@ -119,6 +122,12 @@ const validations: {
 
 class GnomesService {
   private async loadGnomes(): Promise<ResponseType<Array<GnomeType>>> {
+    const getGenre = (gnome: GnomeType): Genre => {
+      return (gnome.name.toLowerCase().match(/t/g) || []).length > 2
+        ? 'Male'
+        : 'Female';
+    };
+
     try {
       const response = await axios.get<{ Brastlewark: Array<GnomeType> }>(
         process.env.REACT_APP_GET_POPULATION_ENDPOINT
@@ -136,7 +145,8 @@ class GnomesService {
         ...gnome,
         friends_linked: gnome.friends.map(friendName =>
           gnomes.find(currentGnome => currentGnome.name === friendName)
-        )
+        ),
+        genre: getGenre(gnome)
       }));
 
       cacheService.set('GNOMES', data);
@@ -265,7 +275,8 @@ class GnomesService {
         Math.ceil(max(weights) || 1000)
       ],
       availableHairColor: uniq(hairColors),
-      availableProfessions: uniq(professions)
+      availableProfessions: uniq(professions),
+      availableGenres: ['Female', 'Male'] as Array<Genre>
     };
   }
 

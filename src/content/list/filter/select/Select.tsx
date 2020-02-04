@@ -20,20 +20,22 @@ type SelectProps = MaterialSelectProps & {
   label: string;
 };
 
-export const Select: React.FC<SelectProps> = props => (
-  <FormControlStyled>
+export const Select: React.FC<SelectProps> = ({ className, ...props }) => (
+  <FormControlStyled className={className}>
     <InputLabel id='demo-mutiple-chip-label'>{props.label}</InputLabel>
     <MaterialSelect
       labelId='demo-mutiple-chip-label'
       id='demo-mutiple-chip'
       input={<Input id='select-multiple-chip' />}
-      renderValue={selected => (
-        <div>
-          {(selected as string[]).map(value => (
-            <Chip key={value} label={value} />
-          ))}
-        </div>
-      )}
+      renderValue={selected =>
+        (props.multiple === true && (
+          <div>
+            {(selected as string[]).map(value => (
+              <Chip key={value} label={value} />
+            ))}
+          </div>
+        )) || <>{selected}</>
+      }
       {...props}
     >
       {props.suggestions.map(suggestion => (

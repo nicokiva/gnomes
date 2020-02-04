@@ -96,7 +96,7 @@ export const Item: React.FC<ItemProps> = props => {
   const showGnome = (id: number) => {
     history.push(`/gnomes/${id}`);
   };
-
+  console.log(props.item);
   return (
     <Root
       isLast={props.isLast}
@@ -111,6 +111,7 @@ export const Item: React.FC<ItemProps> = props => {
         <DataContainerStyled>
           <NameStyled>{props.item.name}</NameStyled>
           <QuestionAnswer question='Age' answer={props.item.age} />
+          <QuestionAnswer question='Genre' answer={props.item.genre} />
           <ExtraDataStyled isVisible={props.isExpanded === true}>
             <QuestionAnswer question='Height' answer={props.item.height} />
             <QuestionAnswer question='Weight' answer={props.item.weight} />

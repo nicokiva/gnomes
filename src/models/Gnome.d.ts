@@ -1,7 +1,4 @@
-enum Genre {
-  Male,
-  Female
-}
+export type Genre = 'Male' | 'Female';
 
 export type GnomeFiltersEvaluationFnType = (
   toValidate: string | number | Array<string> | undefined,
