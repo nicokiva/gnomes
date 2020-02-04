@@ -122,11 +122,10 @@ const validations: {
 
 class GnomesService {
   private async loadGnomes(): Promise<ResponseType<Array<GnomeType>>> {
-    const getGenre = (gnome: GnomeType): Genre => {
-      return (gnome.name.toLowerCase().match(/t/g) || []).length > 2
+    const getGenre = (gnome: GnomeType): Genre =>
+      (gnome.name.toLowerCase().match(/t/g) || []).length > 2
         ? 'Male'
         : 'Female';
-    };
 
     try {
       const response = await axios.get<{ Brastlewark: Array<GnomeType> }>(
