@@ -23,6 +23,13 @@ A disadventage is that in order to edit webpack config or to create eslint rules
 
 ##
 
+Steps to run the project:
+
+1. Download repo.
+2. `npm install`
+3. `npm start`
+4. Enjoy!
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
