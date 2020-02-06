@@ -1,3 +1,28 @@
+## IMPORTANT NOTES:
+
+Currently data is retrieved from a single endpoint which provides all the gnomes in the app. The benefit is that all gnomes are loaded at the very beginning causing a big request. Apart from that, a lot of gnomes is stored in memory despite it is not required as user will not see all. I'd suggest to implement another endpoint for filtering and to get paginated gnomes to load smaller pieces of the list.
+
+Gnomes are loaded when user scrolls up and down. List shows almost 20 gnomes, no more is displayed until user scrolls. I that moment, the list is refreshed with new gnomes. The benefit is that UI is not blocked due to the amount of elements in the list.
+
+#### Only mobile is supported.
+
+From the excercise, street teams will use this app so desktop resolutions are not supported.
+
+#### Tests support
+
+As specified in the excercise, a very few amount of tests was created but if it was a productive app, every component should have their own unit tests (apart for the integration tests and others developed by QA).
+
+#### TypeScript
+
+TypeScript is a meta language that allows developer to type JavaScript. Personally, I find it really useful as too many issues can be caught before they go live.
+
+#### Create React App
+
+A very useful library which allows to create a project with a very few effort. CRA creates everything for the developer, and download required libraries such as react and for testing purposes.
+A disadventage is that in order to edit webpack config or to create eslint rules, it is required to install some external libraries.
+
+##
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
