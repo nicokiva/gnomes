@@ -21,6 +21,9 @@ TypeScript is a meta language that allows developer to type JavaScript. Personal
 A very useful library which allows to create a project with a very few effort. CRA creates everything for the developer, and download required libraries such as react and for testing purposes.
 A disadventage is that in order to edit webpack config or to create eslint rules, it is required to install some external libraries.
 
+#### Material-UI
+It's a library with predefined already built UI Components. It is used to avoid styling small components such as input, sliders and dropdowns. 
+
 ##
 
 Steps to run the project:
