@@ -2,18 +2,25 @@ import React, { useState } from 'react';
 import { Filter, FilterProps } from './Filter';
 import { GnomeFiltersType, Genre } from '../../../models/Gnome';
 import { MetadataType } from '../../../services/GnomesService';
+import { connect } from 'react-redux';
+import { ThunkDispatch } from 'redux-thunk';
+import { setFilters } from '../../../actions/Actions';
+import { Action } from 'redux';
+import { history } from '../../../App';
+import { ReducersState } from '../../../reducers/Reducers';
 
 export type FilterContainerProps = {
-  onApplyFilters: (filters: GnomeFiltersType) => void;
   defaultFilters?: GnomeFiltersType;
 
   metadata: MetadataType;
+
+  setFilters: (filters?: GnomeFiltersType) => void;
 };
 
-export const FilterContainer: React.FC<FilterContainerProps> = ({
-  onApplyFilters,
+const FilterContainerInner: React.FC<FilterContainerProps> = ({
   defaultFilters,
-  metadata
+  metadata,
+  setFilters
 }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [name, setName] = useState<FilterProps['name']>(
@@ -69,7 +76,9 @@ export const FilterContainer: React.FC<FilterContainerProps> = ({
 
   const handleResetFilter = () => {
     handleExpandOrCollapse();
-    onApplyFilters({});
+    setFilters({});
+
+    history.push(`/gnomes`);
   };
 
   const handleApplyFilter = () => {
@@ -85,7 +94,9 @@ export const FilterContainer: React.FC<FilterContainerProps> = ({
     };
 
     handleExpandOrCollapse();
-    onApplyFilters(filters);
+    setFilters(filters);
+
+    history.push(`/gnomes`);
   };
 
   const handleChangeAge = (event: any, newValue: number | number[]) => {
@@ -152,3 +163,22 @@ export const FilterContainer: React.FC<FilterContainerProps> = ({
     />
   );
 };
+
+const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action>) => ({
+  setFilters: (filters?: GnomeFiltersType) => {
+    dispatch(setFilters(filters));
+  }
+});
+
+const mapStateToProps = (
+  state: ReducersState
+): Pick<FilterContainerProps, 'defaultFilters'> => {
+  const { filters } = state;
+
+  return { defaultFilters: filters };
+};
+
+export const FilterContainer = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(FilterContainerInner);

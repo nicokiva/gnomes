@@ -211,7 +211,7 @@ export const Filter: React.FC<FilterProps> = ({
           />
 
           <Checkbox
-            label='All?'
+            label='Match all?'
             onChange={onChangeProfessionsExclusion}
             value={professionsExclusion}
             checked={professionsExclusion}

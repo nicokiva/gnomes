@@ -28,7 +28,7 @@ export type ListProps = {
   isLoading: boolean;
   filters: FilterContainerProps['defaultFilters'];
   metadata: MetadataType | undefined | null;
-} & Pick<FilterContainerProps, 'onApplyFilters'>;
+};
 
 export const List: React.FC<ListProps> = ({
   gnomes,
@@ -36,7 +36,6 @@ export const List: React.FC<ListProps> = ({
   onFetchMore,
   isLoading,
   filters,
-  onApplyFilters,
   metadata
 }) => {
   const ref = useRef<HTMLUListElement>(null);
@@ -83,11 +82,7 @@ export const List: React.FC<ListProps> = ({
 
   return (
     <Root data-testid='list'>
-      <FilterContainer
-        defaultFilters={filters}
-        onApplyFilters={onApplyFilters}
-        metadata={metadata}
-      />
+      <FilterContainer metadata={metadata} />
 
       <ListStyled ref={ref}>
         {gnomes.map((gnome, index) => (

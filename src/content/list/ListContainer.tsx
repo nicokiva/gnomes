@@ -2,18 +2,12 @@ import React, { useEffect } from 'react';
 import { GnomeType, GnomeFiltersType } from '../../models/Gnome';
 import { useParams } from 'react-router-dom';
 import { MetadataType } from '../../services/GnomesService';
-import { List, ListProps } from './List';
-import { history } from '../../App';
+import { List } from './List';
 import { connect } from 'react-redux';
 import { ReducersState } from '../../reducers/Reducers';
 import { Action } from 'redux';
 import { ThunkDispatch } from 'redux-thunk';
-import {
-  getGnomes,
-  getMetadata,
-  setFilters,
-  loadMoreGnomes
-} from '../../actions/Actions';
+import { getGnomes, getMetadata, loadMoreGnomes } from '../../actions/Actions';
 
 type ListContainerProps = {
   gnomes?: Array<GnomeType> | null;
@@ -21,7 +15,6 @@ type ListContainerProps = {
   isLoading: boolean;
   filters?: GnomeFiltersType;
 
-  setFilters: (filters?: GnomeFiltersType) => void;
   getMetadata: () => Promise<void>;
   getGnomes: (
     pivotId?: number,
@@ -63,19 +56,10 @@ const ListContainerInner: React.FC<ListContainerProps> = props => {
     props.loadMoreGnomes(pivotId, props.filters);
   };
 
-  const handleApplyFilters = (
-    filters: Parameters<ListProps['onApplyFilters']>[0]
-  ) => {
-    props.setFilters(filters);
-
-    history.push(`/gnomes`);
-  };
-
   return (
     <List
       metadata={props.metadata}
       filters={props.filters}
-      onApplyFilters={handleApplyFilters}
       gnomes={props.gnomes}
       onFetchMore={handleFetchMore}
       isLoading={props.isLoading}
@@ -101,20 +85,14 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action>) => ({
   },
   getMetadata: async () => {
     await dispatch(getMetadata());
-  },
-  setFilters: (filters?: GnomeFiltersType) => {
-    dispatch(setFilters(filters));
   }
 });
 
 const mapStateToProps = (
   state: ReducersState
-): Pick<
-  ListContainerProps,
-  'gnomes' | 'metadata' | 'isLoading' | 'filters'
-> => {
-  const { gnomes, metadata, isLoading, filters } = state;
-  return { gnomes, metadata, isLoading, filters };
+): Pick<ListContainerProps, 'gnomes' | 'metadata' | 'isLoading'> => {
+  const { gnomes, metadata, isLoading } = state;
+  return { gnomes, metadata, isLoading };
 };
 
 export const ListContainer = connect(
