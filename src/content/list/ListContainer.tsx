@@ -90,9 +90,12 @@ const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action>) => ({
 
 const mapStateToProps = (
   state: ReducersState
-): Pick<ListContainerProps, 'gnomes' | 'metadata' | 'isLoading'> => {
-  const { gnomes, metadata, isLoading } = state;
-  return { gnomes, metadata, isLoading };
+): Pick<
+  ListContainerProps,
+  'gnomes' | 'metadata' | 'isLoading' | 'filters'
+> => {
+  const { gnomes, metadata, isLoading, filters } = state;
+  return { gnomes, metadata, isLoading, filters };
 };
 
 export const ListContainer = connect(

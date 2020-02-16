@@ -275,7 +275,7 @@ class GnomesService {
       ],
       availableHairColor: uniq(hairColors),
       availableProfessions: uniq(professions),
-      availableGenres: ['Not Specified', 'Female', 'Male'] as Array<Genre>
+      availableGenres: ['Female', 'Male'] as Array<Genre>
     };
   }
 

@@ -4,7 +4,7 @@ import { GnomeFiltersType, Genre } from '../../../models/Gnome';
 import { MetadataType } from '../../../services/GnomesService';
 import { connect } from 'react-redux';
 import { ThunkDispatch } from 'redux-thunk';
-import { setFilters } from '../../../actions/Actions';
+import { setFilters, getGnomes } from '../../../actions/Actions';
 import { Action } from 'redux';
 import { history } from '../../../App';
 import { ReducersState } from '../../../reducers/Reducers';
@@ -167,6 +167,7 @@ const FilterContainerInner: React.FC<FilterContainerProps> = ({
 const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action>) => ({
   setFilters: (filters?: GnomeFiltersType) => {
     dispatch(setFilters(filters));
+    dispatch(getGnomes(undefined, filters));
   }
 });
 
