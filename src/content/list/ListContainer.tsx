@@ -1,37 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { GnomeType, GnomeFiltersType } from '../../models/Gnome';
 import { useParams } from 'react-router-dom';
-import { gnomesService, MetadataType } from '../../services/GnomesService';
+import { MetadataType } from '../../services/GnomesService';
 import { List, ListProps } from './List';
 import { history } from '../../App';
+import { connect } from 'react-redux';
+import { ReducersState } from '../../reducers/Reducers';
+import { Action } from 'redux';
+import { ThunkDispatch } from 'redux-thunk';
+import {
+  getGnomes,
+  getMetadata,
+  setFilters,
+  loadMoreGnomes
+} from '../../actions/Actions';
 
-type ListContainerProps = {};
+type ListContainerProps = {
+  gnomes?: Array<GnomeType> | null;
+  metadata?: MetadataType | null;
+  isLoading: boolean;
+  filters?: GnomeFiltersType;
 
-export const ListContainer: React.FC<ListContainerProps> = () => {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isErrored, setIsErrored] = useState<boolean>(false);
-  const [gnomes, setGnomes] = useState<Array<GnomeType> | undefined | null>(
-    undefined
-  );
-  const [metadata, setMetadata] = useState<MetadataType | undefined | null>(
-    undefined
-  );
+  setFilters: (filters?: GnomeFiltersType) => void;
+  getMetadata: () => Promise<void>;
+  getGnomes: (
+    pivotId?: number,
+    filters?: GnomeFiltersType,
+    amount?: number
+  ) => Promise<void>;
 
-  const [filters, setFilters] = useState<GnomeFiltersType | undefined>(
-    undefined
-  );
+  loadMoreGnomes: (
+    pivotId?: number,
+    filters?: GnomeFiltersType,
+    amount?: number
+  ) => Promise<void>;
+};
 
+const ListContainerInner: React.FC<ListContainerProps> = props => {
   const { id } = useParams();
-
-  const fetchGnomes = (pivotId?: GnomeType['id'], filters?: GnomeFiltersType) =>
-    gnomesService.getGnomes(pivotId, filters).then(newGnomes => {
-      setGnomes(newGnomes);
-
-      return gnomesService.getMetadata().then(ranges => {
-        setMetadata(ranges);
-        return newGnomes;
-      });
-    });
 
   useEffect(() => {
     const gnomeAlreadyLoaded = (
@@ -42,41 +48,76 @@ export const ListContainer: React.FC<ListContainerProps> = () => {
       gnomes !== null &&
       gnomes.find(gnome => gnome.id === Number(id)) !== undefined;
 
-    if (id !== undefined && gnomeAlreadyLoaded(Number(id), gnomes)) {
+    if (id !== undefined && gnomeAlreadyLoaded(Number(id), props.gnomes)) {
       return;
     }
 
-    setIsLoading(true);
-    fetchGnomes(id !== undefined ? Number(id) : undefined, filters).then(
-      newGnomes => {
-        setIsLoading(false);
-        setIsErrored(newGnomes === undefined);
-      }
-    );
-  }, [id, filters]);
+    props
+      .getGnomes(id !== undefined ? Number(id) : undefined, props.filters)
+      .then(() => {
+        props.getMetadata();
+      });
+  }, [id, props.filters]);
 
   const handleFetchMore = (pivotId: GnomeType['id']) => {
-    fetchGnomes(pivotId, filters);
+    props.loadMoreGnomes(pivotId, props.filters);
   };
 
   const handleApplyFilters = (
     filters: Parameters<ListProps['onApplyFilters']>[0]
   ) => {
-    setFilters(filters);
+    props.setFilters(filters);
 
     history.push(`/gnomes`);
   };
 
   return (
     <List
-      metadata={metadata}
-      filters={filters}
+      metadata={props.metadata}
+      filters={props.filters}
       onApplyFilters={handleApplyFilters}
-      gnomes={gnomes}
+      gnomes={props.gnomes}
       onFetchMore={handleFetchMore}
-      isLoading={isLoading}
-      isErrored={isErrored}
+      isLoading={props.isLoading}
       id={id !== undefined ? Number(id) : undefined}
     />
   );
 };
+
+const mapDispatchToProps = (dispatch: ThunkDispatch<{}, {}, Action>) => ({
+  getGnomes: async (
+    pivotId?: number,
+    filters?: GnomeFiltersType,
+    amount?: number
+  ) => {
+    await dispatch(getGnomes(pivotId, filters, amount));
+  },
+  loadMoreGnomes: async (
+    pivotId?: number,
+    filters?: GnomeFiltersType,
+    amount?: number
+  ) => {
+    await dispatch(loadMoreGnomes(pivotId, filters, amount));
+  },
+  getMetadata: async () => {
+    await dispatch(getMetadata());
+  },
+  setFilters: (filters?: GnomeFiltersType) => {
+    dispatch(setFilters(filters));
+  }
+});
+
+const mapStateToProps = (
+  state: ReducersState
+): Pick<
+  ListContainerProps,
+  'gnomes' | 'metadata' | 'isLoading' | 'filters'
+> => {
+  const { gnomes, metadata, isLoading, filters } = state;
+  return { gnomes, metadata, isLoading, filters };
+};
+
+export const ListContainer = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ListContainerInner);

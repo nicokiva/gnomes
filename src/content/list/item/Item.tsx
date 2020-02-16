@@ -96,7 +96,7 @@ export const Item: React.FC<ItemProps> = props => {
   const showGnome = (id: number) => {
     history.push(`/gnomes/${id}`);
   };
-  console.log(props.item);
+
   return (
     <Root
       isLast={props.isLast}

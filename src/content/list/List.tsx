@@ -26,7 +26,6 @@ export type ListProps = {
   id?: number;
   onFetchMore: (pivotId: number) => void;
   isLoading: boolean;
-  isErrored: boolean;
   filters: FilterContainerProps['defaultFilters'];
   metadata: MetadataType | undefined | null;
 } & Pick<FilterContainerProps, 'onApplyFilters'>;
@@ -36,7 +35,6 @@ export const List: React.FC<ListProps> = ({
   id,
   onFetchMore,
   isLoading,
-  isErrored,
   filters,
   onApplyFilters,
   metadata
@@ -74,10 +72,6 @@ export const List: React.FC<ListProps> = ({
     return <Loading />;
   }
 
-  if (isErrored === true) {
-    return <>Error!</>;
-  }
-
   if (
     gnomes === null ||
     gnomes === undefined ||
@@ -88,7 +82,7 @@ export const List: React.FC<ListProps> = ({
   }
 
   return (
-    <Root>
+    <Root data-testid='list'>
       <FilterContainer
         defaultFilters={filters}
         onApplyFilters={onApplyFilters}
